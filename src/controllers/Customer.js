@@ -4,8 +4,6 @@ const { ACCESS_TOKEN_SECRET } = require("../../util/helper");
 const getProfile = async (req, res) => {
   try {
     const userId = getCustomerUserId(req);
-    console.log(userId);
-
     const sql = "select * from users where user_id = ? ";
     const user = await db.executeQuery(sql, [userId]);
     if (user.error || !user.data.length) {
