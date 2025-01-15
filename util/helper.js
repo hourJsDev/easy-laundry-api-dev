@@ -25,6 +25,10 @@ const decodeBase64 = (input) => {
   return atob(input);
 };
 
+const handleException = (res, functionName, message) => {
+  return res.status(405).json({ message: `${functionName}: ${message}` });
+};
+
 module.exports = {
   encryptPassword,
   encodeBase64,
@@ -32,4 +36,5 @@ module.exports = {
   checkPassword,
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
+  handleException,
 };

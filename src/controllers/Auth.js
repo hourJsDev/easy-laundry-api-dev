@@ -4,6 +4,7 @@ const {
   checkPassword,
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
+  handleException,
 } = require("../../util/helper");
 const jwt = require("jsonwebtoken");
 const db = require("../db/connect");
@@ -12,6 +13,7 @@ let refreshTokens = [];
 
 const login = async (req, res) => {
   try {
+    validateRequest(req.body, res, "login");
     const { username, password } = req.body;
     const result = await db.querySelect(
       "select * from users where phone = ? ",
@@ -56,7 +58,7 @@ const login = async (req, res) => {
       accessToken,
     });
   } catch (e) {
-    console.log("login: ", e);
+    handleException(res, "Auth-controller-login", e);
   }
 };
 
@@ -74,7 +76,7 @@ const register = async (req, res) => {
     }
     res.json({ error: true, message: "register failed!" });
   } catch (e) {
-    console.log("Register: ", e);
+    handleException(res, "Auth-controller-register", e);
   }
 };
 
@@ -92,7 +94,7 @@ const verifyRegisterOTP = async (req, res) => {
     }
     res.json({ ...result, ...sms });
   } catch (e) {
-    console.log(e);
+    handleException(res, "Auth-controller-verifyRegisterOTP", e);
   }
 };
 
@@ -106,8 +108,7 @@ const checkExistCustomer = async (phone, email) => {
     }
     return { error: false };
   } catch (e) {
-    console.log(e);
-    return { error: true };
+    handleException(res, "Auth-controller-checkExistCustomer", e);
   }
 };
 
@@ -118,13 +119,17 @@ const validateRequest = (params, res, type) => {
       (!params?.email || !params?.phone || !params.code)
     ) {
       return res.status(401).json({
-        message: "phone , code , email is required!",
+        message: "phone , code , email required!",
       });
     } else if (type === "refreshToken" && !params?.token) {
-      return res.status(401).json({ message: "Refresh token is required" });
+      return res.status(401).json({ message: "Refresh token  required" });
+    } else if (type === "login" && (!params.username || !params.password)) {
+      return res
+        .status(401)
+        .json({ message: "username and password  required" });
     }
   } catch (e) {
-    console.log(e);
+    handleException(res, "Auth-controller-validateRequest", e);
   }
 };
 
@@ -154,7 +159,7 @@ const exchangeRefreshToken = (req, res) => {
       });
     });
   } catch (e) {
-    console.log(e);
+    handleException(res, "Auth-controller-exchangeRefreshToken", e);
   }
 };
 
