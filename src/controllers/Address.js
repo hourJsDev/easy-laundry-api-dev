@@ -17,7 +17,7 @@ const addAddress = async (req, res) => {
       sql.substring(0, sql.length - 1) +
       sqlValues.substring(0, sqlValues.length - 1) +
       ")";
-    await db.executeQuery(sql, params);
+    await db.executeQuery(sql, params, res);
     res.status(200).json({ message: "added successfully!" });
   } catch (e) {
     handleException(e, "Address-controller-addAddress");
@@ -29,7 +29,7 @@ const getAddress = async (req, res) => {
     const userId = getCustomerUserId(req);
     const sql =
       "select * from addresses where user_id = ? order by address_id asc ";
-    const address = await db.executeQuery(sql, [userId]);
+    const address = await db.executeQuery(sql, [userId], res);
     if (address.error || !address.data.length) {
       return res.status(404).json({ message: "address list is empty!" });
     }
@@ -39,4 +39,25 @@ const getAddress = async (req, res) => {
   }
 };
 
-module.exports = { addAddress, getAddress };
+const editAddress = async (req, res) => {
+  try {
+    const userId = getCustomerUserId(req);
+    const { data, address_id } = req.body;
+    let sql = "update addresses set ";
+    let params = [];
+    Object.keys(data).forEach((key) => {
+      sql += ` ${key} = ? ,`;
+      params.push(data[key]);
+    });
+    sql =
+      sql.substring(0, sql.length - 1) +
+      " where user_id = ? and address_id = ? ";
+    params = [...params, ...[userId, address_id]];
+    await db.executeQuery(sql, params);
+    res.status(200).json({ message: "edit successfully!" });
+  } catch (e) {
+    handleException(res, "Address-controller-editAddress", e);
+  }
+};
+
+module.exports = { addAddress, getAddress, editAddress };

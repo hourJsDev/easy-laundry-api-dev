@@ -35,11 +35,11 @@ const editProfile = async (req, res) => {
   try {
     const userId = getCustomerUserId(req);
     const { data } = req.body;
-    let sql = "update users set ";
+    let sql = "update users set updated_at = now() , ";
     let params = [];
     Object.keys(data).forEach((key) => {
       sql += ` ${key} = ? ,`;
-      params.push(profile[key]);
+      params.push(data[key]);
     });
     sql = sql.substring(0, sql.length - 1) + " where user_id = ? ";
     params.push(userId);

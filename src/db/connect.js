@@ -32,7 +32,7 @@ const querySelect = async (query, params) => {
         }
       });
     });
-    return result
+    return result;
   } catch (e) {
     console.log(e);
   }
@@ -56,5 +56,4 @@ const executeQuery = async (query, params) => {
   }
 };
 
-
-module.exports = { querySelect , executeQuery};
+module.exports = { querySelect, executeQuery };

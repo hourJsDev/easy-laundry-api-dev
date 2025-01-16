@@ -29,7 +29,7 @@ const validateEditProfile = async (req, res, next) => {
       res.status(401).json({ message: "data required!" });
     }
   } catch (e) {
-    handleException(res, "Auth-middleware-validateEditProfile", e);
+    handleException(res, "Customer-middleware-validateEditProfile", e);
   }
 };
 
