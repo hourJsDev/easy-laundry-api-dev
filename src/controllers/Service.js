@@ -25,11 +25,11 @@ const addService = async (req, res) => {
 const getService = async (req, res) => {
   try {
     const sql = "select * from services  ";
-    const address = await db.executeQuery(sql, [], res);
-    if (address.error || !address.data.length) {
+    const service = await db.executeQuery(sql, []);
+    if (service.error || !service.data.length) {
       return res.status(404).json({ message: "service list is empty!" });
     }
-    res.status(200).json({ addresses: address.data });
+    res.status(200).json({ services: service.data });
   } catch (e) {
     handleException(e, "Service-controller-getService");
   }
@@ -53,4 +53,85 @@ const editService = async (req, res) => {
   }
 };
 
-module.exports = { addService, getService, editService };
+const addItem = async (req, res) => {
+  try {
+    const { data } = req.body;
+    let sql = " insert into items (";
+    let sqlValues = " ) values(";
+    let params = [];
+    Object.keys(data).forEach((key) => {
+      sql += `${key},`;
+      sqlValues += " ? ,";
+      params.push(data[key]);
+    });
+    sql =
+      sql.substring(0, sql.length - 1) +
+      sqlValues.substring(0, sqlValues.length - 1) +
+      ")";
+    await db.executeQuery(sql, params);
+    res.status(200).json({ message: "added successfully!" });
+  } catch (e) {
+    handleException(res, "Service-controller-addItem", e);
+  }
+};
+
+const addIemToService = async (req, res) => {
+  try {
+    const { data } = req.body;
+    let sql = " insert into item_to_service (";
+    let sqlValues = " ) values(";
+    let params = [];
+    Object.keys(data).forEach((key) => {
+      sql += `${key},`;
+      sqlValues += " ? ,";
+      params.push(data[key]);
+    });
+    sql =
+      sql.substring(0, sql.length - 1) +
+      sqlValues.substring(0, sqlValues.length - 1) +
+      ")";
+    await db.executeQuery(sql, params);
+    res.status(200).json({ message: "added successfully!" });
+  } catch (e) {
+    handleException(res, "Service-controller-addIemToService", e);
+  }
+};
+
+const editServiceDetail = async (req, res) => {
+  try {
+    const { item_to_service_id, price } = req.body;
+    const sql =
+      "update item_to_service set base_price = ? , updated_at = now() where item_to_service_id = ? ";
+    await db.executeQuery(sql, [price, item_to_service_id]);
+    res.status(200).json({ message: "edited successfully!" });
+  } catch (e) {
+    handleException(res, "Service-controller-editItemInService", e);
+  }
+};
+
+const getServiceDetail = async (req, res) => {
+  try {
+    const { service_id } = req.body;
+    const sql =
+      " select s.service_id , i.item_id , i.item_name , i.image , its.base_price from services s " +
+      " inner join item_to_service its on its.service_id = s.service_id " +
+      " inner join items i on i.item_id = its.item_id where s.service_id = ? ";
+    const serviceDetail = await db.executeQuery(sql, [service_id]);
+    if (serviceDetail.error || !serviceDetail.data.length) {
+      return res.status(404).json({ message: "service list is empty!" });
+    }
+    res.status(200).json({ service_detail: serviceDetail.data });
+  } catch (e) {
+    handleException(e, "Service-controller-getServiceDetail");
+  }
+};
+
+module.exports = {
+  addService,
+  getService,
+  editService,
+  addItem,
+  addIemToService,
+  getServiceDetail,
+  editServiceDetail,
+};

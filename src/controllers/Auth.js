@@ -14,10 +14,10 @@ let refreshTokens = [];
 const login = async (req, res) => {
   try {
     validateRequest(req.body, res, "login");
-    const { username, password } = req.body;
+    const { username, password, email } = req.body;
     const result = await db.querySelect(
-      "select * from users where phone = ? ",
-      [username]
+      `select * from users where ${email ? "email" : "phone"} = ? `,
+      [email || username]
     );
     let user = {};
     if (
@@ -123,7 +123,10 @@ const validateRequest = (params, res, type) => {
       });
     } else if (type === "refreshToken" && !params?.token) {
       return res.status(401).json({ message: "Refresh token  required" });
-    } else if (type === "login" && (!params.username || !params.password)) {
+    } else if (
+      type === "login" &&
+      ((!params.username && !params.email) || !params.password)
+    ) {
       return res
         .status(401)
         .json({ message: "username and password  required" });
